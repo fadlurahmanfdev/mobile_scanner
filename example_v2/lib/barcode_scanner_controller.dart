@@ -74,6 +74,8 @@ class _BarcodeScannerWithControllerState extends State<BarcodeScannerWithControl
         unawaited(_subscription?.cancel());
         _subscription = null;
         unawaited(controller.stop());
+      default:
+        return;
     }
   }
 

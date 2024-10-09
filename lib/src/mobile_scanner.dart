@@ -124,8 +124,7 @@ class MobileScanner extends StatefulWidget {
   State<MobileScanner> createState() => _MobileScannerState();
 }
 
-class _MobileScannerState extends State<MobileScanner>
-    with WidgetsBindingObserver {
+class _MobileScannerState extends State<MobileScanner> with WidgetsBindingObserver {
   late final controller = widget.controller ?? MobileScannerController();
 
   /// The current scan window.
@@ -178,8 +177,7 @@ class _MobileScannerState extends State<MobileScanner>
     final double dy = (newScanWindow.height - scanWindow!.height).abs();
 
     // The new scan window has changed enough, allow updating the scan window.
-    if (dx >= widget.scanWindowUpdateThreshold ||
-        dy >= widget.scanWindowUpdateThreshold) {
+    if (dx >= widget.scanWindowUpdateThreshold || dy >= widget.scanWindowUpdateThreshold) {
       scanWindow = newScanWindow;
 
       unawaited(controller.updateScanWindow(scanWindow));
@@ -194,8 +192,7 @@ class _MobileScannerState extends State<MobileScanner>
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
-          return widget.placeholderBuilder?.call(context, child) ??
-              defaultPlaceholder;
+          return widget.placeholderBuilder?.call(context, child) ?? defaultPlaceholder;
         }
 
         final MobileScannerException? error = value.error;
@@ -206,16 +203,14 @@ class _MobileScannerState extends State<MobileScanner>
             child: Center(child: Icon(Icons.error, color: Colors.white)),
           );
 
-          return widget.errorBuilder?.call(context, error, child) ??
-              defaultError;
+          return widget.errorBuilder?.call(context, error, child) ?? defaultError;
         }
 
         return LayoutBuilder(
           builder: (context, constraints) {
             _maybeUpdateScanWindow(value, constraints);
 
-            final Widget? overlay =
-                widget.overlayBuilder?.call(context, constraints);
+            final Widget? overlay = widget.overlayBuilder?.call(context, constraints);
             final Size cameraPreviewSize = value.size;
 
             final Widget scannerWidget = ClipRect(
@@ -303,6 +298,8 @@ class _MobileScannerState extends State<MobileScanner>
         unawaited(_subscription?.cancel());
         _subscription = null;
         unawaited(controller.stop());
+      default:
+        return;
     }
   }
 }
