@@ -66,8 +66,10 @@ class MobileScanner(
         /**
          * Create a barcode scanner from the given options.
          */
-        fun defaultBarcodeScannerFactory(options: BarcodeScannerOptions?) : BarcodeScanner {
-            return if (options == null) BarcodeScanning.getClient() else BarcodeScanning.getClient(options)
+        fun defaultBarcodeScannerFactory(options: BarcodeScannerOptions?): BarcodeScanner {
+            return if (options == null) BarcodeScanning.getClient() else BarcodeScanning.getClient(
+                options
+            )
         }
     }
 
@@ -89,8 +91,8 @@ class MobileScanner(
         scanner?.let {
             it.process(inputImage).addOnSuccessListener { barcodes ->
                 if (detectionSpeed == DetectionSpeed.NO_DUPLICATES) {
-                    val newScannedBarcodes = barcodes.mapNotNull {
-                        barcode -> barcode.rawValue
+                    val newScannedBarcodes = barcodes.mapNotNull { barcode ->
+                        barcode.rawValue
                     }.sorted()
 
                     if (newScannedBarcodes == lastScanned) {
@@ -124,16 +126,24 @@ class MobileScanner(
                         barcodeMap,
                         null,
                         mediaImage.width,
-                        mediaImage.height)
+                        mediaImage.height
+                    )
                     return@addOnSuccessListener
                 }
 
-                val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
+                val bitmap = Bitmap.createBitmap(
+                    mediaImage.width,
+                    mediaImage.height,
+                    Bitmap.Config.ARGB_8888
+                )
                 val imageFormat = YuvToRgbConverter(activity.applicationContext)
 
                 imageFormat.yuvToRgb(mediaImage, bitmap)
 
-                val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
+                val bmResult = rotateBitmap(
+                    bitmap,
+                    camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f
+                )
 
                 val stream = ByteArrayOutputStream()
                 bmResult.compress(Bitmap.CompressFormat.PNG, 100, stream)
@@ -212,7 +222,8 @@ class MobileScanner(
         val rotation = if (Build.VERSION.SDK_INT >= 30) {
             activity.display!!.rotation
         } else {
-            val windowManager = activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val windowManager =
+                activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
             windowManager.defaultDisplay.rotation
         }
@@ -220,11 +231,12 @@ class MobileScanner(
         val widthMaxRes = cameraResolution.width
         val heightMaxRes = cameraResolution.height
 
-        val targetResolution = if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
-            Size(widthMaxRes, heightMaxRes) // Portrait mode
-        } else {
-            Size(heightMaxRes, widthMaxRes) // Landscape mode
-        }
+        val targetResolution =
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+                Size(widthMaxRes, heightMaxRes) // Portrait mode
+            } else {
+                Size(heightMaxRes, widthMaxRes) // Landscape mode
+            }
         return targetResolution
     }
 
@@ -298,20 +310,18 @@ class MobileScanner(
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+            val displayManager =
+                activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
             if (cameraResolution != null) {
                 if (newCameraResolutionSelector) {
                     val selectorBuilder = ResolutionSelector.Builder()
-                    selectorBuilder.setResolutionStrategy(
-                        ResolutionStrategy(
-                            cameraResolution,
-                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
-                        )
-                    )
+                    selectorBuilder.setResolutionStrategy(ResolutionStrategy.HIGHEST_AVAILABLE_STRATEGY)
+                        .setAllowedResolutionMode(ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE)
                     analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
                 } else {
-                    @Suppress("DEPRECATION")
+//                    @Suppress("DEPRECATION")
+//                    analysisBuilder.setTargetResolution(getResolution(cameraResolution))
                     analysisBuilder.setTargetResolution(getResolution(cameraResolution))
                 }
 
@@ -330,7 +340,8 @@ class MobileScanner(
                                         ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
                                     )
                                 )
-                                analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
+                                analysisBuilder.setResolutionSelector(selectorBuilder.build())
+                                    .build()
                             } else {
                                 @Suppress("DEPRECATION")
                                 analysisBuilder.setTargetResolution(getResolution(cameraResolution))
@@ -353,7 +364,7 @@ class MobileScanner(
                     preview,
                     analysis
                 )
-            } catch(exception: Exception) {
+            } catch (exception: Exception) {
                 mobileScannerErrorCallback(NoCamera())
 
                 return@addListener
@@ -405,6 +416,7 @@ class MobileScanner(
         }, executor)
 
     }
+
     /**
      * Stop barcode scanning.
      */
@@ -414,7 +426,8 @@ class MobileScanner(
         }
 
         if (displayListener != null) {
-            val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+            val displayManager =
+                activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
             displayManager.unregisterDisplayListener(displayListener)
             displayListener = null
@@ -455,7 +468,7 @@ class MobileScanner(
                 return@let
             }
 
-            when(it.cameraInfo.torchState.value) {
+            when (it.cameraInfo.torchState.value) {
                 TorchState.OFF -> it.cameraControl.enableTorch(true)
                 TorchState.ON -> it.cameraControl.enableTorch(false)
             }
@@ -469,7 +482,8 @@ class MobileScanner(
         image: Uri,
         scannerOptions: BarcodeScannerOptions?,
         onSuccess: AnalyzerSuccessCallback,
-        onError: AnalyzerErrorCallback) {
+        onError: AnalyzerErrorCallback
+    ) {
         val inputImage = InputImage.fromFilePath(activity, image)
 
         // Use a short lived scanner instance, which is closed when the analysis is done.
