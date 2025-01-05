@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.WindowManager
@@ -334,12 +335,8 @@ class MobileScanner(
                         override fun onDisplayChanged(displayId: Int) {
                             if (newCameraResolutionSelector) {
                                 val selectorBuilder = ResolutionSelector.Builder()
-                                selectorBuilder.setResolutionStrategy(
-                                    ResolutionStrategy(
-                                        cameraResolution,
-                                        ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
-                                    )
-                                )
+                                selectorBuilder.setResolutionStrategy(ResolutionStrategy.HIGHEST_AVAILABLE_STRATEGY)
+                                    .setAllowedResolutionMode(ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE)
                                 analysisBuilder.setResolutionSelector(selectorBuilder.build())
                                     .build()
                             } else {
@@ -490,6 +487,13 @@ class MobileScanner(
         val barcodeScanner: BarcodeScanner = barcodeScannerFactory(scannerOptions)
 
         barcodeScanner.process(inputImage).addOnSuccessListener { barcodes ->
+            Log.d(this::class.java.simpleName, "masuk -  total barcodes: ${barcodes.size}")
+            barcodes.forEach { barcode ->
+                Log.d(
+                    this::class.java.simpleName,
+                    "masuk -  barcode raw value: ${barcode.rawValue}"
+                )
+            }
             val barcodeMap = barcodes.map { barcode -> barcode.data }
 
             if (barcodeMap.isEmpty()) {
